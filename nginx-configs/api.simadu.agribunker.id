@@ -10,16 +10,6 @@ server {
     client_max_body_size 10M;
 
     location / {
-        # CORS Headers
-        add_header 'Access-Control-Allow-Origin' '*' always;
-        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS' always;
-        add_header 'Access-Control-Allow-Headers' 'Content-Type, Authorization' always;
-        
-        # Handle preflight requests
-        if ($request_method = 'OPTIONS') {
-            return 204;
-        }
-        
         # Proxy ke Docker container backend di port 5055
         proxy_pass http://localhost:5055;
         
