@@ -37,15 +37,11 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-### 3. Konfigurasi Nginx di VPS Host
+### 3. Konfigurasi Nginx di VPS Ubuntu
 
-#### Opsi A: Menggunakan Subdomain Terpisah
 ```bash
 # Copy file konfigurasi
 sudo cp nginx-host.conf /etc/nginx/sites-available/simadu
-
-# Edit dan sesuaikan domain Anda
-sudo nano /etc/nginx/sites-available/simadu
 
 # Aktifkan konfigurasi
 sudo ln -s /etc/nginx/sites-available/simadu /etc/nginx/sites-enabled/
@@ -57,26 +53,34 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-#### Opsi B: Akses Langsung via IP:PORT
-Jika tidak menggunakan domain, akses langsung:
-- Frontend: `http://your-vps-ip:3012`
-- Backend API: `http://your-vps-ip:5012`
+**Pastikan DNS sudah di-pointing ke VPS:**
+- `simadu.agribunker.id` → IP VPS Anda
+- `api.simadu.agribunker.id` → IP VPS Anda
 
-Pastikan port terbuka di firewall:
+**Buka port di firewall (jika belum):**
 ```bash
+sudo ufw allow 80
+sudo ufw allow 443
 sudo ufw allow 3012
 sudo ufw allow 5012
 ```
 
-### 4. Setup SSL dengan Let's Encrypt (Opsional)
+### 4. Setup SSL dengan Let's Encrypt (PENTING untuk Production)
 ```bash
 # Install Certbot
+sudo apt-get update
 sudo apt-get install certbot python3-certbot-nginx
 
-# Generate SSL Certificate
-sudo certbot --nginx -d simadu.yourdomain.com -d api.simadu.yourdomain.com
+# Generate SSL Certificate untuk kedua domain
+sudo certbot --nginx -d simadu.agribunker.id -d api.simadu.agribunker.id
 
-# Auto-renewal sudah ter-setup otomatis
+# Certbot akan otomatis:
+# 1. Generate SSL certificate
+# 2. Update konfigurasi Nginx
+# 3. Setup auto-renewal
+
+# Verifikasi auto-renewal
+sudo certbot renew --dry-run
 ```
 
 ---
@@ -164,7 +168,12 @@ docker-compose up -d --build --force-recreate
 ### Frontend Tidak Bisa Akses Backend
 Pastikan di file `.env` atau konfigurasi frontend, API URL mengarah ke:
 - Development: `http://localhost:5012`
-- Production: `http://your-vps-ip:5012` atau `https://api.yourdomain.com`
+- Production: `https://api.simadu.agribunker.id`
+
+Update file `.env` di frontend sebelum build:
+```bash
+VITE_API_URL=https://api.simadu.agribunker.id
+```
 
 ---
 
