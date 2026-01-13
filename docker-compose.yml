@@ -7,11 +7,11 @@ services:
       dockerfile: Dockerfile
     container_name: simadu-backend
     ports:
-      - "5012:5012"
+      - "5055:5055"
     restart: unless-stopped
     environment:
       - FLASK_ENV=production
-      - PORT=5012
+      - PORT=5055
     networks:
       - simadu-network
 

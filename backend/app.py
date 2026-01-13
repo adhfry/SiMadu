@@ -324,5 +324,5 @@ if __name__ == '__main__':
     import os
     # Host 0.0.0.0 agar bisa diakses device lain di jaringan
     # Port bisa di-override via environment variable
-    port = int(os.environ.get('PORT', 5012))
+    port = int(os.environ.get('PORT', 5055))
     app.run(debug=False, host='0.0.0.0', port=port)

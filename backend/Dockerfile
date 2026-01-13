@@ -16,8 +16,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy aplikasi
 COPY . .
 
-# Expose port 5012
-EXPOSE 5012
+# Expose port 5055
+EXPOSE 5055
 
 # Jalankan aplikasi
 CMD ["python", "app.py"]

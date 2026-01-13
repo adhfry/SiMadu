@@ -20,8 +20,8 @@ server {
             return 204;
         }
         
-        # Proxy ke Docker container backend di port 5012
-        proxy_pass http://localhost:5012;
+        # Proxy ke Docker container backend di port 5055
+        proxy_pass http://localhost:5055;
         
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
