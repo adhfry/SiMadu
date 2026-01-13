@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: simadu-backend
+    ports:
+      - "5012:5012"
+    restart: unless-stopped
+    environment:
+      - FLASK_ENV=production
+      - PORT=5012
+    networks:
+      - simadu-network
+
+  frontend:
+    build:
+      context: ./fe-simadu
+      dockerfile: Dockerfile
+    container_name: simadu-frontend
+    ports:
+      - "3012:3012"
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - simadu-network
+
+networks:
+  simadu-network:
+    driver: bridge
