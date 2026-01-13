@@ -68,12 +68,12 @@ const { xValues, gradeC, gradeB, gradeA } = generateMembershipCurves()
 
 // Find intersection points
 const findIntersections = () => {
-  const intersections = []
+  const intersections: Array<{ x: number; y: number; label: string }> = []
   
   // C-B intersection
   for (let x = 30; x <= 50; x++) {
-    const cVal = gradeC[x]
-    const bVal = gradeB[x]
+    const cVal = gradeC[x] ?? 0
+    const bVal = gradeB[x] ?? 0
     if (Math.abs(cVal - bVal) < 0.05 && cVal > 0 && bVal > 0) {
       intersections.push({ x, y: cVal, label: 'C∩B' })
       break
@@ -82,8 +82,8 @@ const findIntersections = () => {
   
   // B-A intersection
   for (let x = 50; x <= 70; x++) {
-    const bVal = gradeB[x]
-    const aVal = gradeA[x]
+    const bVal = gradeB[x] ?? 0
+    const aVal = gradeA[x] ?? 0
     if (Math.abs(bVal - aVal) < 0.05 && bVal > 0 && aVal > 0) {
       intersections.push({ x, y: bVal, label: 'B∩A' })
       break
@@ -149,7 +149,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
       data: xValues.map(x => {
         const intersection = intersections.find(i => i.x === x)
         return intersection ? intersection.y : null
-      }),
+      }) as (number | null)[],
       borderColor: 'rgb(147, 51, 234)',
       backgroundColor: 'rgb(147, 51, 234)',
       pointRadius: 8,
@@ -167,7 +167,7 @@ const chartData = computed<ChartData<'line'>>(() => ({
           return props.graphData[roundedScore]?.y || 0
         }
         return null
-      }),
+      }) as (number | null)[],
       borderColor: 'rgb(220, 38, 38)',
       backgroundColor: 'rgb(220, 38, 38)',
       pointRadius: 12,
@@ -195,7 +195,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
         padding: 15,
         font: {
           size: 11,
-          weight: '500',
+          weight: 500,
           family: "'Inter', -apple-system, sans-serif"
         },
         boxWidth: 12,
@@ -235,7 +235,8 @@ const chartOptions = computed<ChartOptions<'line'>>(() => ({
           return `${label}: μ = ${value.toFixed(4)}`
         },
         footer: function(tooltipItems) {
-          const x = tooltipItems[0].parsed.x
+          const x = tooltipItems[0]?.parsed?.x
+          if (x === null || x === undefined) return ''
           let zone = ''
           if (x < 30) zone = '🔴 Sangat Rendah (0-30)'
           else if (x < 50) zone = '🟠 Rendah (30-50)'
