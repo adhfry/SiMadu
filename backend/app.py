@@ -17,8 +17,15 @@ logger = logging.getLogger("SiMadu_Fuzzy")
 
 app = Flask(__name__)
 
-# Mengizinkan akses dari Frontend (Vue.js)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+# CORS - Izinkan semua origin untuk production
+CORS(app, resources={
+    r"/api/*": {
+        "origins": "*",
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type", "Authorization"],
+        "supports_credentials": False
+    }
+})
 
 # ============================================
 # 1. IMAGE PROCESSING (PRE-PROCESSING)
