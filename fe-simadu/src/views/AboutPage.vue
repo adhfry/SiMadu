@@ -5,18 +5,23 @@ const router = useRouter()
 
 const members = [
   {
-    name: 'Nama Anggota 1',
-    nim: 'NIM001',
+    name: 'Ahda Firly Barori',
+    nim: '2302310186',
     role: 'Ketua Kelompok'
   },
   {
-    name: 'Nama Anggota 2',
-    nim: 'NIM002',
+    name: 'RA. Shofia Tasmin Maulida',
+    nim: '2302310162',
     role: 'Anggota'
   },
   {
-    name: 'Nama Anggota 3',
-    nim: 'NIM003',
+    name: 'Uswatun Kamilia',
+    nim: '2302310150',
+    role: 'Anggota'
+  },
+  {
+    name: 'Rofiatul Hasanah',
+    nim: '2302310116',
     role: 'Anggota'
   }
 ]
@@ -58,11 +63,20 @@ const members = [
           <p class="text-sm sm:text-base text-amber-800 font-medium">Tentang Kami</p>
         </div>
         <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-950 mb-4">
-          Kelompok 3
+          Kelompok Informatika D - 2023
         </h1>
-        <p class="text-base sm:text-lg text-gray-700 max-w-2xl mx-auto">
+        <p class="text-base sm:text-lg text-gray-700 max-w-3xl mx-auto mb-3">
           UAS Artificial Intelligence - Sistem Klasifikasi Mutu Tembakau
         </p>
+        <div class="max-w-2xl mx-auto bg-white/60 rounded-xl p-4 border border-amber-200">
+          <p class="text-sm text-gray-700">
+            <span class="font-bold text-amber-900">Fakultas Sains dan Teknologi</span><br>
+            Universitas Bahaudin Mudhary Madura
+          </p>
+          <p class="text-xs text-gray-600 mt-2">
+            <span class="font-semibold">Dosen Pengampu:</span> Pyepit Rinekso Andriyanto, S.Kom, M.Kom.
+          </p>
+        </div>
       </div>
 
       <!-- Project Info -->
@@ -113,11 +127,11 @@ const members = [
       </div>
 
       <!-- Team Members -->
-      <div class="max-w-5xl mx-auto">
+      <div class="max-w-6xl mx-auto">
         <h2 class="text-2xl sm:text-3xl font-bold text-amber-900 mb-6 sm:mb-8 text-center">
           Anggota Kelompok
         </h2>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="(member, index) in members" :key="index"
             class="backdrop-blur-md bg-white/40 border border-white/30 rounded-2xl p-6 sm:p-8 shadow-xl text-center hover:shadow-2xl transition-all duration-300 transform hover:scale-105">
             <div class="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-green-400 to-amber-500 flex items-center justify-center text-white text-3xl sm:text-4xl font-bold shadow-lg">
@@ -223,9 +237,12 @@ const members = [
     <footer class="backdrop-blur-md bg-white/30 border-t border-white/20 py-6 sm:py-8 mt-12 sm:mt-20">
       <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <p class="text-sm sm:text-base text-gray-700">
-          © 2026 SiMadu - Sistem Klasifikasi Mutu Tembakau | Kelompok 3
+          © 2026 SiMadu - Sistem Klasifikasi Mutu Tembakau
         </p>
         <p class="text-xs sm:text-sm text-gray-600 mt-2">
+          Kelompok Informatika D - 2023 | Fakultas Sains dan Teknologi UBM Madura
+        </p>
+        <p class="text-xs text-gray-500 mt-1">
           Fuzzy Logic Mamdani | UAS Artificial Intelligence
         </p>
       </div>
