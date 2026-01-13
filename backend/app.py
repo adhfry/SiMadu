@@ -240,8 +240,16 @@ def defuzzification(aggregated):
     return score, numerator, denominator, graph_points
 
 # ============================================
-# API ENDPOINT
+# API ENDPOINTS
 # ============================================
+@app.route('/api/health', methods=['GET'])
+def health():
+    return jsonify({'status': 'SiMadu API is running', 'version': '1.0.0'}), 200
+
+@app.route('/api/grade', methods=['GET'])
+def grade():
+    return jsonify({'status': 'SiMadu API is running', 'version': '1.0.0'}), 200
+
 @app.route('/api/classify', methods=['POST'])
 def classify():
     if 'image' not in request.files:
