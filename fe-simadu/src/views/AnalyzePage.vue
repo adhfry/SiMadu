@@ -3,6 +3,8 @@ import { ref } from "vue";
 import { useRouter } from "vue-router";
 import { analyzeTabacco, type TobaccoAnalysisResponse } from "@/services/api";
 import DefuzzChart from "@/components/DefuzzChart.vue";
+import MembershipChart from "@/components/MembershipChart.vue";
+import OutputMembershipChart from "@/components/OutputMembershipChart.vue";
 
 const router = useRouter();
 
@@ -359,6 +361,11 @@ const formatPrice = (price: number) => {
               <p class="text-xl sm:text-2xl font-bold text-green-700 mt-2">
                 {{ formatPrice(result.data.result.price) }}/kg
               </p>
+              <p
+                class="text-base sm:text-lg font-semibold text-amber-800 mt-3 bg-amber-50 px-4 py-2 rounded-lg border border-amber-200"
+              >
+                {{ result.data.result.tobacco_type }}
+              </p>
             </div>
           </div>
           <button
@@ -405,6 +412,39 @@ const formatPrice = (price: number) => {
           >
             <span class="text-2xl">🔀</span> 2. Fuzzification (Fuzzy Input)
           </h3>
+
+          <!-- Grafik Keanggotaan HUE -->
+          <div class="mb-36">
+            <h4 class="font-bold text-amber-800 mb-3 text-lg">
+              📊 Grafik Keanggotaan Hue (Warna)
+            </h4>
+            <MembershipChart
+              type="hue"
+              :crispValue="result.data.input.hue"
+              :membershipValues="{
+                emas: result.data.fuzzification.emas,
+                kuning: result.data.fuzzification.kuning,
+                hijau: result.data.fuzzification.hijau,
+              }"
+            />
+          </div>
+
+          <!-- Grafik Keanggotaan VALUE -->
+          <div class="mb-36">
+            <h4 class="font-bold text-amber-800 mb-3 text-lg">
+              📊 Grafik Keanggotaan Value (Kecerahan)
+            </h4>
+            <MembershipChart
+              type="value"
+              :crispValue="result.data.input.value"
+              :membershipValues="{
+                gelap: result.data.fuzzification.gelap,
+                sedang: result.data.fuzzification.sedang,
+                cerah: result.data.fuzzification.cerah,
+              }"
+            />
+          </div>
+
           <div class="space-y-6">
             <!-- Hue Membership -->
             <div>
@@ -479,77 +519,178 @@ const formatPrice = (price: number) => {
           <!-- Rules Alpha -->
           <div class="mb-6">
             <h4 class="font-bold text-amber-800 mb-3">
-              Aturan Fuzzy (MIN Implication) - Total 6 Rules
+              Aturan Fuzzy (MIN Implication) - Total 9 Rules
             </h4>
             <div
               class="bg-white/60 rounded-lg p-4 border border-amber-200 space-y-2.5 text-sm"
             >
-              <!-- Rule 1: Grade A -->
-              <div class="bg-green-50 border-l-4 border-green-500 p-3 rounded">
-                <p>
-                  <span class="font-semibold text-green-800">Rule 1:</span> 
-                  <span class="text-gray-700">IF Emas AND Cerah THEN Grade A</span>
+              <!-- KATEGORI EMAS -->
+              <div
+                class="bg-gradient-to-r from-yellow-50 to-yellow-100 border-l-4 border-yellow-600 p-3 rounded space-y-2"
+              >
+                <p class="font-bold text-yellow-900 mb-2">
+                  🟡 KATEGORI EMAS (Premium)
                 </p>
-                <p class="mt-1 text-xs text-gray-600">
-                  α₁ = MIN(μ<sub>Emas</sub>, μ<sub>Cerah</sub>) = 
-                  <span class="font-bold text-green-700">{{ result.data.inference.rules.R1.toFixed(4) }}</span>
-                </p>
+
+                <div class="bg-white/80 p-2 rounded">
+                  <p>
+                    <span class="font-semibold text-green-800">R1:</span>
+                    <span class="text-gray-700"
+                      >IF Emas AND Cerah THEN Emas Cerah (A+)</span
+                    >
+                  </p>
+                  <p class="mt-1 text-xs text-gray-600">
+                    α₁ = MIN({{ result.data.fuzzification.emas.toFixed(3) }},
+                    {{ result.data.fuzzification.cerah.toFixed(3) }}) =
+                    <span class="font-bold text-green-700">{{
+                      result.data.inference.rules.R1.toFixed(4)
+                    }}</span>
+                  </p>
+                </div>
+
+                <div class="bg-white/80 p-2 rounded">
+                  <p>
+                    <span class="font-semibold text-green-700">R2:</span>
+                    <span class="text-gray-700"
+                      >IF Emas AND Sedang THEN Emas Sedang (A)</span
+                    >
+                  </p>
+                  <p class="mt-1 text-xs text-gray-600">
+                    α₂ = MIN({{ result.data.fuzzification.emas.toFixed(3) }},
+                    {{ result.data.fuzzification.sedang.toFixed(3) }}) =
+                    <span class="font-bold text-green-700">{{
+                      result.data.inference.rules.R2.toFixed(4)
+                    }}</span>
+                  </p>
+                </div>
+
+                <div class="bg-white/80 p-2 rounded">
+                  <p>
+                    <span class="font-semibold text-yellow-700">R3:</span>
+                    <span class="text-gray-700"
+                      >IF Emas AND Gelap THEN Emas Gelap (B)</span
+                    >
+                  </p>
+                  <p class="mt-1 text-xs text-gray-600">
+                    α₃ = MIN({{ result.data.fuzzification.emas.toFixed(3) }},
+                    {{ result.data.fuzzification.gelap.toFixed(3) }}) =
+                    <span class="font-bold text-yellow-700">{{
+                      result.data.inference.rules.R3.toFixed(4)
+                    }}</span>
+                  </p>
+                </div>
               </div>
 
-              <!-- Rules 2-4: Grade B -->
-              <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded space-y-2">
-                <div>
+              <!-- KATEGORI KUNING -->
+              <div
+                class="bg-gradient-to-r from-orange-50 to-orange-100 border-l-4 border-orange-600 p-3 rounded space-y-2"
+              >
+                <p class="font-bold text-orange-900 mb-2">
+                  🟠 KATEGORI KUNING (Sedang)
+                </p>
+
+                <div class="bg-white/80 p-2 rounded">
                   <p>
-                    <span class="font-semibold text-yellow-800">Rule 2:</span> 
-                    <span class="text-gray-700">IF Emas AND Sedang THEN Grade B</span>
+                    <span class="font-semibold text-yellow-700">R4:</span>
+                    <span class="text-gray-700"
+                      >IF Kuning AND Cerah THEN Kuning Cerah (B+)</span
+                    >
                   </p>
                   <p class="mt-1 text-xs text-gray-600">
-                    α₂ = MIN(μ<sub>Emas</sub>, μ<sub>Sedang</sub>) = 
-                    <span class="font-bold text-yellow-700">{{ result.data.inference.rules.R2.toFixed(4) }}</span>
+                    α₄ = MIN({{ result.data.fuzzification.kuning.toFixed(3) }},
+                    {{ result.data.fuzzification.cerah.toFixed(3) }}) =
+                    <span class="font-bold text-yellow-700">{{
+                      result.data.inference.rules.R4.toFixed(4)
+                    }}</span>
                   </p>
                 </div>
-                <div>
+
+                <div class="bg-white/80 p-2 rounded">
                   <p>
-                    <span class="font-semibold text-yellow-800">Rule 3:</span> 
-                    <span class="text-gray-700">IF Kuning AND Cerah THEN Grade B</span>
+                    <span class="font-semibold text-yellow-600">R5:</span>
+                    <span class="text-gray-700"
+                      >IF Kuning AND Sedang THEN Kuning Sedang (B)</span
+                    >
                   </p>
                   <p class="mt-1 text-xs text-gray-600">
-                    α₃ = MIN(μ<sub>Kuning</sub>, μ<sub>Cerah</sub>) = 
-                    <span class="font-bold text-yellow-700">{{ result.data.inference.rules.R3.toFixed(4) }}</span>
+                    α₅ = MIN({{ result.data.fuzzification.kuning.toFixed(3) }},
+                    {{ result.data.fuzzification.sedang.toFixed(3) }}) =
+                    <span class="font-bold text-yellow-600">{{
+                      result.data.inference.rules.R5.toFixed(4)
+                    }}</span>
                   </p>
                 </div>
-                <div>
+
+                <div class="bg-white/80 p-2 rounded">
                   <p>
-                    <span class="font-semibold text-yellow-800">Rule 4:</span> 
-                    <span class="text-gray-700">IF Kuning AND Sedang THEN Grade B</span>
+                    <span class="font-semibold text-orange-700">R6:</span>
+                    <span class="text-gray-700"
+                      >IF Kuning AND Gelap THEN Kuning Gelap (C)</span
+                    >
                   </p>
                   <p class="mt-1 text-xs text-gray-600">
-                    α₄ = MIN(μ<sub>Kuning</sub>, μ<sub>Sedang</sub>) = 
-                    <span class="font-bold text-yellow-700">{{ result.data.inference.rules.R4.toFixed(4) }}</span>
+                    α₆ = MIN({{ result.data.fuzzification.kuning.toFixed(3) }},
+                    {{ result.data.fuzzification.gelap.toFixed(3) }}) =
+                    <span class="font-bold text-orange-700">{{
+                      result.data.inference.rules.R6.toFixed(4)
+                    }}</span>
                   </p>
                 </div>
               </div>
 
-              <!-- Rules 5-6: Grade C -->
-              <div class="bg-orange-50 border-l-4 border-orange-500 p-3 rounded space-y-2">
-                <div>
+              <!-- KATEGORI HIJAU -->
+              <div
+                class="bg-gradient-to-r from-green-50 to-green-100 border-l-4 border-green-600 p-3 rounded space-y-2"
+              >
+                <p class="font-bold text-green-900 mb-2">
+                  🟢 KATEGORI HIJAU (Rendah)
+                </p>
+
+                <div class="bg-white/80 p-2 rounded">
                   <p>
-                    <span class="font-semibold text-orange-800">Rule 5:</span> 
-                    <span class="text-gray-700">IF Hijau THEN Grade C</span>
+                    <span class="font-semibold text-orange-600">R7:</span>
+                    <span class="text-gray-700"
+                      >IF Hijau AND Cerah THEN Hijau Cerah (C+)</span
+                    >
                   </p>
                   <p class="mt-1 text-xs text-gray-600">
-                    α₅ = μ<sub>Hijau</sub> = 
-                    <span class="font-bold text-orange-700">{{ result.data.inference.rules.R5.toFixed(4) }}</span>
+                    α₇ = MIN({{ result.data.fuzzification.hijau.toFixed(3) }},
+                    {{ result.data.fuzzification.cerah.toFixed(3) }}) =
+                    <span class="font-bold text-orange-600">{{
+                      result.data.inference.rules.R7.toFixed(4)
+                    }}</span>
                   </p>
                 </div>
-                <div>
+
+                <div class="bg-white/80 p-2 rounded">
                   <p>
-                    <span class="font-semibold text-orange-800">Rule 6:</span> 
-                    <span class="text-gray-700">IF Gelap THEN Grade C</span>
+                    <span class="font-semibold text-orange-700">R8:</span>
+                    <span class="text-gray-700"
+                      >IF Hijau AND Sedang THEN Hijau Sedang (C)</span
+                    >
                   </p>
                   <p class="mt-1 text-xs text-gray-600">
-                    α₆ = μ<sub>Gelap</sub> = 
-                    <span class="font-bold text-orange-700">{{ result.data.inference.rules.R6.toFixed(4) }}</span>
+                    α₈ = MIN({{ result.data.fuzzification.hijau.toFixed(3) }},
+                    {{ result.data.fuzzification.sedang.toFixed(3) }}) =
+                    <span class="font-bold text-orange-700">{{
+                      result.data.inference.rules.R8.toFixed(4)
+                    }}</span>
+                  </p>
+                </div>
+
+                <div class="bg-white/80 p-2 rounded">
+                  <p>
+                    <span class="font-semibold text-red-700">R9:</span>
+                    <span class="text-gray-700"
+                      >IF Hijau AND Gelap THEN Hijau Gelap (D)</span
+                    >
+                  </p>
+                  <p class="mt-1 text-xs text-gray-600">
+                    α₉ = MIN({{ result.data.fuzzification.hijau.toFixed(3) }},
+                    {{ result.data.fuzzification.gelap.toFixed(3) }}) =
+                    <span class="font-bold text-red-700">{{
+                      result.data.inference.rules.R9.toFixed(4)
+                    }}</span>
                   </p>
                 </div>
               </div>
@@ -561,29 +702,84 @@ const formatPrice = (price: number) => {
             <h4 class="font-bold text-amber-800 mb-3">
               Agregasi (MAX Composition)
             </h4>
-            <p class="text-xs text-gray-600 mb-3 bg-blue-50 p-2 rounded border border-blue-200">
+            <p
+              class="text-xs text-gray-600 mb-3 bg-blue-50 p-2 rounded border border-blue-200"
+            >
               💡 Menggabungkan hasil rules dengan operasi MAX untuk setiap grade
             </p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div class="bg-green-50 rounded-lg p-4 border-2 border-green-300">
-                <p class="text-sm text-gray-600 font-semibold mb-1">Grade A (Premium)</p>
-                <p class="text-xs text-gray-500 mb-2">MAX(α₁)</p>
-                <p class="text-3xl font-bold text-green-700">
-                  {{ result.data.inference.aggregation.A.toFixed(4) }}
+
+            <!-- Grafik Output Membership Functions -->
+            <div class="mb-32">
+              <h5 class="font-semibold text-amber-700 mb-3 text-sm">
+                📊 Grafik Fungsi Keanggotaan Output (Grade)
+              </h5>
+              <OutputMembershipChart
+                :aggregation="result.data.inference.aggregation"
+              />
+            </div>
+
+            <div class="grid grid-cols-3 sm:grid-cols-9 gap-2">
+              <div class="bg-red-50 rounded-lg p-2 border-2 border-red-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">C-</p>
+                <p class="text-xs text-gray-500 mb-1">α₉</p>
+                <p class="text-lg font-bold text-red-700">
+                  {{ result.data.inference.aggregation.C_minus.toFixed(4) }}
                 </p>
               </div>
-              <div class="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-300">
-                <p class="text-sm text-gray-600 font-semibold mb-1">Grade B (Standar)</p>
-                <p class="text-xs text-gray-500 mb-2">MAX(α₂, α₃, α₄)</p>
-                <p class="text-3xl font-bold text-yellow-700">
+              <div class="bg-red-100 rounded-lg p-2 border-2 border-red-400">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">C</p>
+                <p class="text-xs text-gray-500 mb-1">α₈</p>
+                <p class="text-lg font-bold text-red-800">
+                  {{ result.data.inference.aggregation.C.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-orange-50 rounded-lg p-2 border-2 border-orange-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">C+</p>
+                <p class="text-xs text-gray-500 mb-1">α₇</p>
+                <p class="text-lg font-bold text-orange-700">
+                  {{ result.data.inference.aggregation.C_plus.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-yellow-50 rounded-lg p-2 border-2 border-yellow-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">B-</p>
+                <p class="text-xs text-gray-500 mb-1">α₆</p>
+                <p class="text-lg font-bold text-yellow-700">
+                  {{ result.data.inference.aggregation.B_minus.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-yellow-100 rounded-lg p-2 border-2 border-yellow-400">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">B</p>
+                <p class="text-xs text-gray-500 mb-1">α₅</p>
+                <p class="text-lg font-bold text-yellow-800">
                   {{ result.data.inference.aggregation.B.toFixed(4) }}
                 </p>
               </div>
-              <div class="bg-orange-50 rounded-lg p-4 border-2 border-orange-300">
-                <p class="text-sm text-gray-600 font-semibold mb-1">Grade C (Rendah)</p>
-                <p class="text-xs text-gray-500 mb-2">MAX(α₅, α₆)</p>
-                <p class="text-3xl font-bold text-orange-700">
-                  {{ result.data.inference.aggregation.C.toFixed(4) }}
+              <div class="bg-blue-50 rounded-lg p-2 border-2 border-blue-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">B+</p>
+                <p class="text-xs text-gray-500 mb-1">α₄</p>
+                <p class="text-lg font-bold text-blue-700">
+                  {{ result.data.inference.aggregation.B_plus.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-cyan-50 rounded-lg p-2 border-2 border-cyan-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">A-</p>
+                <p class="text-xs text-gray-500 mb-1">α₃</p>
+                <p class="text-lg font-bold text-cyan-700">
+                  {{ result.data.inference.aggregation.A_minus.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-green-50 rounded-lg p-2 border-2 border-green-300">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">A</p>
+                <p class="text-xs text-gray-500 mb-1">α₂</p>
+                <p class="text-lg font-bold text-green-700">
+                  {{ result.data.inference.aggregation.A.toFixed(4) }}
+                </p>
+              </div>
+              <div class="bg-green-100 rounded-lg p-2 border-2 border-green-400">
+                <p class="text-[10px] text-gray-600 font-semibold mb-1">A+</p>
+                <p class="text-xs text-gray-500 mb-1">α₁</p>
+                <p class="text-lg font-bold text-green-800">
+                  {{ result.data.inference.aggregation.A_plus.toFixed(4) }}
                 </p>
               </div>
             </div>
@@ -622,8 +818,8 @@ const formatPrice = (price: number) => {
 
           <!-- Chart -->
           <div class="mb-6 bg-white rounded-xl p-4 border border-amber-200">
-            <DefuzzChart 
-              :graphData="result.data.graph_data" 
+            <DefuzzChart
+              :graphData="result.data.graph_data"
               :aggregation="result.data.inference.aggregation"
               :score="result.data.defuzzification.score"
             />
@@ -649,7 +845,12 @@ const formatPrice = (price: number) => {
             >
               {{ result.data.result.grade }}
             </p>
-            <p class="text-2xl font-bold text-green-700">
+            <p
+              class="text-2xl font-bold text-amber-900 mb-2 bg-white/60 rounded-lg px-4 py-2 inline-block"
+            >
+              {{ result.data.result.tobacco_type }}
+            </p>
+            <p class="text-2xl font-bold text-green-700 mt-3">
               {{ formatPrice(result.data.result.price) }}/kg
             </p>
           </div>

@@ -32,12 +32,22 @@ export interface TobaccoAnalysisResponse {
         R4: number
         R5: number
         R6: number
+        R7: number
+        R8: number
+        R9: number
       }
       aggregation: {
+        A_plus: number
         A: number
+        A_minus: number
+        B_plus: number
         B: number
+        B_minus: number
+        C_plus: number
         C: number
+        C_minus: number
       }
+      dominant_rule: string
     }
     defuzzification: {
       score: number
@@ -45,6 +55,7 @@ export interface TobaccoAnalysisResponse {
       denominator: number
     }
     result: {
+      tobacco_type: string
       grade: string
       price: number
     }

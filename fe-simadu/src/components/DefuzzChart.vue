@@ -30,7 +30,17 @@ ChartJS.register(
 
 interface Props {
   graphData: Array<{ x: number; y: number }>
-  aggregation: { A: number; B: number; C: number }
+  aggregation: {
+    A_plus: number
+    A: number
+    A_minus: number
+    B_plus: number
+    B: number
+    B_minus: number
+    C_plus: number
+    C: number
+    C_minus: number
+  }
   score: number
 }
 

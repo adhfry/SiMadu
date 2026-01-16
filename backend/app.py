@@ -86,19 +86,19 @@ def fuzzification(hue, value):
     else:
         fuzzy_input['emas'] = 0.0
 
-    # Himpunan KUNING (Sedang): Segitiga [25, 45, 65] (Digeser menyesuaikan Emas)
+    # Himpunan KUNING (Sedang): Segitiga [25, 45, 60]
     if 25 < hue <= 45:
         fuzzy_input['kuning'] = (hue - 25) / (45 - 25)
-    elif 45 < hue < 65:
-        fuzzy_input['kuning'] = (65 - hue) / (65 - 45)
+    elif 45 < hue < 60:
+        fuzzy_input['kuning'] = (60 - hue) / (60 - 45)
     else:
         fuzzy_input['kuning'] = 0.0
 
-    # Himpunan HIJAU (Rendah): Trapesium Kanan [55, 75, 80, 80]
-    if hue < 55:
+    # Himpunan HIJAU (Rendah): Trapesium Kanan [50, 65, 80, 80]
+    if hue < 50:
         fuzzy_input['hijau'] = 0.0
-    elif 55 <= hue < 75:
-        fuzzy_input['hijau'] = (hue - 55) / (75 - 55)
+    elif 50 <= hue < 65:
+        fuzzy_input['hijau'] = (hue - 50) / (65 - 50)
     else:
         fuzzy_input['hijau'] = 1.0
 
@@ -134,43 +134,62 @@ def fuzzification(hue, value):
     return fuzzy_input
 
 # ============================================
-# 3. INFERENCE (EVALUASI RULE)
+# 3. INFERENCE (EVALUASI RULE) - 9 RULES → 9 GRADES
 # ============================================
 def inference(fi):
     """
-    Menerapkan Aturan IF-THEN (Min Implication)
-    Dan Agregasi (Max Composition)
+    Menerapkan 9 Aturan IF-THEN (Min Implication)
+    Kombinasi: Warna (Emas, Kuning, Hijau) x Kecerahan (Cerah, Sedang, Gelap)
+    Setiap rule menghasilkan grade berbeda (9 grades total)
     """
     rules = {}
     
-    # Rule 1: IF Emas AND Cerah THEN Grade A
+    # === KATEGORI EMAS ===
+    # Rule 1: IF Emas AND Cerah THEN Emas Cerah (Grade A+)
     rules['R1'] = min(fi['emas'], fi['cerah'])
     
-    # Rule 2: IF Emas AND Sedang THEN Grade B
+    # Rule 2: IF Emas AND Sedang THEN Emas Sedang (Grade A)
     rules['R2'] = min(fi['emas'], fi['sedang'])
     
-    # Rule 3: IF Kuning AND Cerah THEN Grade B
-    rules['R3'] = min(fi['kuning'], fi['cerah'])
+    # Rule 3: IF Emas AND Gelap THEN Emas Gelap (Grade A-)
+    rules['R3'] = min(fi['emas'], fi['gelap'])
     
-    # Rule 4: IF Kuning AND Sedang THEN Grade B
-    rules['R4'] = min(fi['kuning'], fi['sedang'])
+    # === KATEGORI KUNING ===
+    # Rule 4: IF Kuning AND Cerah THEN Kuning Cerah (Grade B+)
+    rules['R4'] = min(fi['kuning'], fi['cerah'])
     
-    # Rule 5: IF Hijau THEN Grade C (Singular rule, no AND)
-    rules['R5'] = fi['hijau']
+    # Rule 5: IF Kuning AND Sedang THEN Kuning Sedang (Grade B)
+    rules['R5'] = min(fi['kuning'], fi['sedang'])
     
-    # Rule 6: IF Gelap THEN Grade C (Singular rule, no AND)
-    rules['R6'] = fi['gelap']
+    # Rule 6: IF Kuning AND Gelap THEN Kuning Gelap (Grade B-)
+    rules['R6'] = min(fi['kuning'], fi['gelap'])
+    
+    # === KATEGORI HIJAU ===
+    # Rule 7: IF Hijau AND Cerah THEN Hijau Cerah (Grade C+)
+    rules['R7'] = min(fi['hijau'], fi['cerah'])
+    
+    # Rule 8: IF Hijau AND Sedang THEN Hijau Sedang (Grade C)
+    rules['R8'] = min(fi['hijau'], fi['sedang'])
+    
+    # Rule 9: IF Hijau AND Gelap THEN Hijau Gelap (Grade C-)
+    rules['R9'] = min(fi['hijau'], fi['gelap'])
 
-    # AGREGASI (MAX)
-    # Menentukan tinggi daerah arsir untuk setiap himpunan Output
+    # AGREGASI (MAX) - 9 GRADES
+    # Setiap rule menghasilkan grade sendiri
     aggregated = {
-        'A': rules['R1'],
-        'B': max(rules['R2'], rules['R3'], rules['R4']),
-        'C': max(rules['R5'], rules['R6'])
+        'A_plus': rules['R1'],   # Emas Cerah
+        'A': rules['R2'],         # Emas Sedang
+        'A_minus': rules['R3'],   # Emas Gelap
+        'B_plus': rules['R4'],    # Kuning Cerah
+        'B': rules['R5'],         # Kuning Sedang
+        'B_minus': rules['R6'],   # Kuning Gelap
+        'C_plus': rules['R7'],    # Hijau Cerah
+        'C': rules['R8'],         # Hijau Sedang
+        'C_minus': rules['R9']    # Hijau Gelap
     }
     
-    logger.info(f"[INFERENCE] Rules: {rules}")
-    logger.info(f"[AGGREGATION] Max Values: {aggregated}")
+    logger.info(f"[INFERENCE] 9 Rules: {rules}")
+    logger.info(f"[AGGREGATION] 9 Grades: {aggregated}")
     
     return rules, aggregated
 
@@ -178,26 +197,57 @@ def inference(fi):
 # 4. DEFUZZIFICATION (CENTROID DISKRIT)
 # ============================================
 
-# --- Fungsi Keanggotaan Output (Grade 0-100) ---
-def mu_grade_C(x): # Trapesium Kiri [0, 0, 20, 50]
-    if x <= 20: return 1.0
-    elif 20 < x < 50: return (50 - x) / (50 - 20)
+# --- Fungsi Keanggotaan Output (Grade 0-100) - 9 GRADES ---
+def mu_grade_C_minus(x): # Trapesium Kiri [0, 0, 5, 15]
+    if x <= 5: return 1.0
+    elif 5 < x < 15: return (15 - x) / 10
     return 0.0
 
-def mu_grade_B(x): # Segitiga [30, 50, 70]
-    if 30 < x <= 50: return (x - 30) / (50 - 30)
-    elif 50 < x < 70: return (70 - x) / (70 - 50)
+def mu_grade_C(x): # Segitiga [10, 20, 30]
+    if 10 < x <= 20: return (x - 10) / 10
+    elif 20 < x < 30: return (30 - x) / 10
     return 0.0
 
-def mu_grade_A(x): # Trapesium Kanan [50, 80, 100, 100]
-    if x < 50: return 0.0
-    elif 50 <= x < 80: return (x - 50) / (80 - 50)
+def mu_grade_C_plus(x): # Segitiga [25, 35, 45]
+    if 25 < x <= 35: return (x - 25) / 10
+    elif 35 < x < 45: return (45 - x) / 10
+    return 0.0
+
+def mu_grade_B_minus(x): # Segitiga [40, 48, 56]
+    if 40 < x <= 48: return (x - 40) / 8
+    elif 48 < x < 56: return (56 - x) / 8
+    return 0.0
+
+def mu_grade_B(x): # Segitiga [52, 60, 68]
+    if 52 < x <= 60: return (x - 52) / 8
+    elif 60 < x < 68: return (68 - x) / 8
+    return 0.0
+
+def mu_grade_B_plus(x): # Segitiga [64, 72, 80]
+    if 64 < x <= 72: return (x - 64) / 8
+    elif 72 < x < 80: return (80 - x) / 8
+    return 0.0
+
+def mu_grade_A_minus(x): # Segitiga [75, 82, 89]
+    if 75 < x <= 82: return (x - 75) / 7
+    elif 82 < x < 89: return (89 - x) / 7
+    return 0.0
+
+def mu_grade_A(x): # Segitiga [85, 91, 97]
+    if 85 < x <= 91: return (x - 85) / 6
+    elif 91 < x < 97: return (97 - x) / 6
+    return 0.0
+
+def mu_grade_A_plus(x): # Trapesium Kanan [92, 96, 100, 100]
+    if x < 92: return 0.0
+    elif 92 <= x < 96: return (x - 92) / 4
     return 1.0
 
 def defuzzification(aggregated):
     """
     Menghitung Titik Berat (Centroid) dari area terarsir.
     Metode: Discretized Centroid (Sesuai PDF Hal 19)
+    Dengan 9 Grades: A+, A, A-, B+, B, B-, C+, C, C-
     """
     numerator = 0   # Σ(x * μ)
     denominator = 0 # Σ(μ)
@@ -207,20 +257,34 @@ def defuzzification(aggregated):
     
     # Loop sampling x dari 0 sampai 100
     for x in range(0, 101, 1):
-        # Cari nilai asli kurva output pada titik x
+        # Cari nilai asli kurva output pada titik x untuk setiap grade
+        m_A_plus = mu_grade_A_plus(x)
         m_A = mu_grade_A(x)
+        m_A_minus = mu_grade_A_minus(x)
+        m_B_plus = mu_grade_B_plus(x)
         m_B = mu_grade_B(x)
+        m_B_minus = mu_grade_B_minus(x)
+        m_C_plus = mu_grade_C_plus(x)
         m_C = mu_grade_C(x)
+        m_C_minus = mu_grade_C_minus(x)
         
         # Potong (Clip) kurva dengan nilai Agregasi (Alpha Predikat)
-        # Teknik: MIN
+        # Setiap grade punya alpha sendiri dari aggregated
+        clip_A_plus = min(aggregated['A_plus'], m_A_plus)
         clip_A = min(aggregated['A'], m_A)
+        clip_A_minus = min(aggregated['A_minus'], m_A_minus)
+        clip_B_plus = min(aggregated['B_plus'], m_B_plus)
         clip_B = min(aggregated['B'], m_B)
+        clip_B_minus = min(aggregated['B_minus'], m_B_minus)
+        clip_C_plus = min(aggregated['C_plus'], m_C_plus)
         clip_C = min(aggregated['C'], m_C)
+        clip_C_minus = min(aggregated['C_minus'], m_C_minus)
         
         # Gabungkan semua kurva terpotong (Union)
         # Teknik: MAX
-        mu_final = max(clip_A, clip_B, clip_C)
+        mu_final = max(clip_A_plus, clip_A, clip_A_minus, 
+                      clip_B_plus, clip_B, clip_B_minus,
+                      clip_C_plus, clip_C, clip_C_minus)
         
         # Akumulasi Momen
         numerator += x * mu_final
@@ -268,29 +332,57 @@ def classify():
         # 4. Defuzzification
         score, num, den, graph = defuzzification(agg)
         
-        # Penentuan Label Akhir (5 Kategori) & Harga
+        # Penentuan Label Akhir berdasarkan Rule yang Dominan
+        # Cari rule dengan nilai tertinggi untuk menentukan kategori spesifik
+        max_rule = max(rules.items(), key=lambda x: x[1])
+        rule_name = max_rule[0]
+        
+        # Mapping rule ke kategori tembakau
+        tobacco_category = {
+            'R1': 'Tembakau Emas Cerah',
+            'R2': 'Tembakau Emas Sedang',
+            'R3': 'Tembakau Emas Gelap',
+            'R4': 'Tembakau Kuning Cerah',
+            'R5': 'Tembakau Kuning Sedang',
+            'R6': 'Tembakau Kuning Gelap',
+            'R7': 'Tembakau Hijau Cerah',
+            'R8': 'Tembakau Hijau Sedang',
+            'R9': 'Tembakau Hijau Gelap'
+        }
+        
+        tobacco_type = tobacco_category.get(rule_name, 'Tembakau Unknown')
+        
+        # Penentuan Grade & Harga berdasarkan Skor
         grade_label = ""
         harga = 0
         
-        # KATEGORI 1: Sangat Tinggi (Premium Grade A+)
-        if score >= 85:
-            grade_label = "Sangat Tinggi (Premium+)"
+        # 9 KATEGORI GRADE
+        if score >= 94:
+            grade_label = "Grade A+ (Sangat Tinggi)"
             harga = 95000
-        # KATEGORI 2: Tinggi (Grade A)
-        elif score >= 70:
-            grade_label = "Tinggi (Grade A)"
-            harga = 80000
-        # KATEGORI 3: Standar (Grade B)
-        elif score >= 50:
-            grade_label = "Standar (Grade B)"
-            harga = 60000
-        # KATEGORI 4: Rendah (Grade C)
-        elif score >= 30:
-            grade_label = "Rendah (Grade C)"
-            harga = 40000
-        # KATEGORI 5: Sangat Rendah (Grade D/Afkir)
+        elif score >= 88:
+            grade_label = "Grade A (Tinggi)"
+            harga = 85000
+        elif score >= 78:
+            grade_label = "Grade A- (Tinggi Minus)"
+            harga = 75000
+        elif score >= 68:
+            grade_label = "Grade B+ (Baik Plus)"
+            harga = 65000
+        elif score >= 56:
+            grade_label = "Grade B (Baik)"
+            harga = 55000
+        elif score >= 44:
+            grade_label = "Grade B- (Baik Minus)"
+            harga = 45000
+        elif score >= 32:
+            grade_label = "Grade C+ (Cukup Plus)"
+            harga = 35000
+        elif score >= 18:
+            grade_label = "Grade C (Cukup)"
+            harga = 25000
         else:
-            grade_label = "Sangat Rendah (Grade D)"
+            grade_label = "Grade C- (Rendah)"
             harga = 15000
 
         # Response JSON Lengkap (Traceable)
@@ -301,7 +393,8 @@ def classify():
                 'fuzzification': fuzzy_mem,
                 'inference': {
                     'rules': {k: float(v) for k,v in rules.items()},
-                    'aggregation': {k: float(v) for k,v in agg.items()}
+                    'aggregation': {k: float(v) for k,v in agg.items()},
+                    'dominant_rule': rule_name
                 },
                 'defuzzification': {
                     'score': round(score, 2),
@@ -309,6 +402,7 @@ def classify():
                     'denominator': round(den, 2)
                 },
                 'result': {
+                    'tobacco_type': tobacco_type,
                     'grade': grade_label,
                     'price': harga
                 },
