@@ -240,7 +240,7 @@ const chartOptions = computed<ChartOptions<'line'>>(() => {
           label: function(context) {
             const label = context.dataset.label || ''
             const value = context.parsed.y
-            return `${label}: μ = ${value.toFixed(3)}`
+            return `${label}: μ = ${value !== null ? value.toFixed(3) : '0.000'}`
           }
         }
       },
